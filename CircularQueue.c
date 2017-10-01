@@ -1,19 +1,38 @@
 #include <stdio.h>
+//#include "QueueCfg.h"
 
+/* begin content of Queue Config */
 #define QUEUESIZE 0x5  
+
 typedef char QueueIndex;
+
+typedef int QueueData;
+
+/* end content of Queue Config  */
+
 typedef struct 
 {
-  int data[QUEUESIZE];
+  QueueData  data[QUEUESIZE];
   QueueIndex head_queue;
   QueueIndex tail_queue;
 }Queue_type;
 
-Queue_type rQ = {.head_queue = 0, .tail_queue = QUEUESIZE-1};
-Queue_type transmitQ = {.head_queue = 0, .tail_queue = QUEUESIZE-1};
-
 typedef enum {OPERATION_OK, OPERATION_ERROR} QueueOpResult;
 
+
+
+QueueOpResult QueueInit(Queue_type * queueptr, QueueData invalidValue)
+{
+   QueueOpResult rtn;
+   int i;
+   for (i = 0; i < QUEUESIZE; i++)
+   queueptr->data[i] = invalidValue;
+
+   queueptr->head_queue = 0;
+   queueptr->tail_queue = QUEUESIZE-1;
+   rtn = OPERATION_OK;
+   return rtn;
+}
 
 /* operations: Read queue, write queue */
 
@@ -35,7 +54,6 @@ QueueOpResult QueueRead(Queue_type * queueptr, int * queue_value)
    return rtn;
 }
 
-
 QueueOpResult QueueWrite(Queue_type * queueptr, int queue_value)
 {
    QueueOpResult rtn;
@@ -54,6 +72,10 @@ QueueOpResult QueueWrite(Queue_type * queueptr, int queue_value)
    return rtn;
 }
 
+/* Test code */
+
+Queue_type rQ;
+
 int main(void)
 {
   int i, j;
@@ -61,6 +83,7 @@ int main(void)
   int tempdata;
   printf("hello\n");
   /* initialize queue */ 
+  QueueInit(&rQ, 0xA5A5A5A5);
   /*read empty queue */
   QueueRead(&rQ, &i);
 
