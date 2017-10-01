@@ -36,7 +36,7 @@ QueueOpResult QueueInit(Queue_type * queueptr, QueueData invalidValue)
 
 /* operations: Read queue, write queue */
 
-QueueOpResult QueueRead(Queue_type * queueptr, int * queue_value)
+QueueOpResult QueueRead(Queue_type * queueptr, QueueData * queue_value)
 {
    QueueOpResult rtn;
    QueueIndex tailNextValue = (queueptr->tail_queue + 1) % QUEUESIZE;
@@ -54,7 +54,7 @@ QueueOpResult QueueRead(Queue_type * queueptr, int * queue_value)
    return rtn;
 }
 
-QueueOpResult QueueWrite(Queue_type * queueptr, int queue_value)
+QueueOpResult QueueWrite(Queue_type * queueptr, QueueData queue_value)
 {
    QueueOpResult rtn;
    
