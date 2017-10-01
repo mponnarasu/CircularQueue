@@ -1,34 +1,30 @@
 #include <stdio.h>
 
-/* allowed values only 3, 7, 0xC and 0xF  */
-#define QUEUESIZE 0x0F  
-
+#define QUEUESIZE 0x5  
+typedef char QueueIndex;
 typedef struct 
 {
   int data[QUEUESIZE];
-  signed char head_queue;
-  signed char tail_queue;
+  QueueIndex head_queue;
+  QueueIndex tail_queue;
 }Queue_type;
 
-Queue_type queue1 = {.head_queue = 0, .tail_queue = 0};
-Queue_type queue2 = {.head_queue = 0, .tail_queue = 0};
+Queue_type rQ = {.head_queue = 0, .tail_queue = QUEUESIZE-1};
+Queue_type transmitQ = {.head_queue = 0, .tail_queue = QUEUESIZE-1};
 
-enum {OPERATION_OK, OPERATION_ERROR};
+typedef enum {OPERATION_OK, OPERATION_ERROR} QueueOpResult;
 
 
 /* operations: Read queue, write queue */
 
-int readqueue(Queue_type * queueptr, int * queue_value)
+QueueOpResult QueueRead(Queue_type * queueptr, int * queue_value)
 {
-   int rtn;
-   if(queueptr->head_queue != queueptr->tail_queue) 
+   QueueOpResult rtn;
+   QueueIndex tailNextValue = (queueptr->tail_queue + 1) % QUEUESIZE;
+   if(queueptr->head_queue != tailNextValue) 
    {
-     *queue_value = queueptr->data[queueptr->tail_queue]; 
-      queueptr->tail_queue++;
-      if (queueptr->tail_queue > QUEUESIZE)
-      {
-        queueptr->tail_queue = 0;
-      }
+      *queue_value = queueptr->data[tailNextValue]; 
+      queueptr->tail_queue = tailNextValue;
       rtn = OPERATION_OK;
    }
    else
@@ -40,17 +36,14 @@ int readqueue(Queue_type * queueptr, int * queue_value)
 }
 
 
-int writequeue(Queue_type * queueptr, int queue_value)
+QueueOpResult QueueWrite(Queue_type * queueptr, int queue_value)
 {
-   int rtn;
-   if(((queueptr->head_queue - queueptr->tail_queue) & QUEUESIZE ) != QUEUESIZE)
+   QueueOpResult rtn;
+   
+   if(queueptr->head_queue != queueptr->tail_queue)
    {
       queueptr->data[queueptr->head_queue] = queue_value; 
-      queueptr->head_queue++;
-      if (queueptr->head_queue > QUEUESIZE)
-      {
-        queueptr->head_queue = 0;
-      }
+      queueptr->head_queue = ((queueptr->head_queue + 1) % QUEUESIZE);
       rtn = OPERATION_OK;
    }
    else
@@ -62,45 +55,35 @@ int writequeue(Queue_type * queueptr, int queue_value)
 }
 
 int main(void)
-
+{
   int i, j;
+  QueueOpResult rtn;
   int tempdata;
   printf("hello\n");
   /* initialize queue */ 
-  for(i=0;i<QUEUESIZE;i++)
+  /*read empty queue */
+  QueueRead(&rQ, &i);
+
+  /* Write into queue  */
+
+  for(i=0;i<=QUEUESIZE;i++)
   {
-    queue1.data[i] = i;
-    printf("Queue value %d\n", queue1.data[i]);
+    rtn = QueueWrite(&rQ, i);
+    if(rtn == 0) printf("Queue value %d\n", i);
   }
-	
-  for(j=17;j>0;j--)
+ 
+  /*Read first value of queue  */
+  QueueRead(&rQ, &j);
+  printf("%d\n", j);
+
+  QueueWrite(&rQ, i);
+  
+  /* read all values from the queue  */
+  for(i=0;i<=QUEUESIZE;i++)
   {
-    if(!writequeue(&queue1, j))
-    {
-     printf("Writen Data \n", j);
-
-    }
+    rtn = QueueRead(&rQ, &j);
+    if(rtn == 0) printf("Queue value %d\n", j);
   }
-
-  for(i=0;i<QUEUESIZE;i++)
-  {
-    printf("Queue value %d \n", queue1.data[i]);
-
-  }
-
-  for(j=17;j>0;j--)
-  {
-     if(!readqueue(&queue1, &tempdata))
-     {
-      printf(" read data %d  \n", tempdata );
-     }
-  }
-
-  for(i=0;i<QUEUESIZE;i++)
-  {
-    printf("Queue value %d \n", queue1.data[i]);
-  }
-
+ 
 return (0);
 }
-
